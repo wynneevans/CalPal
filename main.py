@@ -14,20 +14,24 @@ try:
 except Exception:
     print("Could not open food calendar")
 
-choice = None
+chosen = ""
 
-print("""
-[1]: Add food to global list.
-[2]: Add food to date list.
-[3]: Print foods in global list.
-[4]: Print calorie intake for each calendar entry.
-[5]: Print protein intake for each calendar entry.
-[exit]: Exit program.
-""")
+def get_choice():
+    choice = ""
+    while choice != "1" and choice != "2" and choice != "3" and choice != "4" and choice != "5" and choice != "exit":
+        choice = input("""
+        [1]: Add food to global list.
+        [2]: Add food to date list.
+        [3]: Print foods in global list.
+        [4]: Print calorie intake for each calendar entry.
+        [5]: Print protein intake for each calendar entry.
+        [exit]: Exit program.
+        """)
+    return choice
 
-while choice != "exit":
+while chosen != "exit":
 
-    choice = input()
+    chosen = get_choice()
 
     if choice == "1":
         food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(" ")
