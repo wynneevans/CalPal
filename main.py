@@ -1,5 +1,6 @@
 from food import *
 import pickle
+#check PyCharm and GitHub are working together
 
 food_dict = {}
 calendar = {}
