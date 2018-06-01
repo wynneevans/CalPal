@@ -7,7 +7,7 @@ calendar = {}
 try:
     food_dict = pickle.load(open("foods.dat", "rb"))
 except Exception:
-    print("Could not open food dictionary")
+    print("Could not open food database.")
 
 try:
     calendar = pickle.load(open("calendar.dat", "rb"))
@@ -33,22 +33,22 @@ while chosen != "exit":
 
     chosen = get_choice()
 
-    if choice == "1":
+    if chosen == "1":
         food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(" ")
         food_dict[food] = Nutrients(int(protein), int(calories))
-    if choice == "2":
+    if chosen == "2":
         date, food_1, weight_1, food_2, weight_2 = input("Enter: date, food 1, weight 1, food 2, weight 2\n").split(" ")
         calendar[date] = FoodList()
         calendar[date].add_food(food_1, int(weight_1))
         calendar[date].add_food(food_2, int(weight_2))
-    if choice == "3":
+    if chosen == "3":
         for food in food_dict:
             print(food, food_dict[food].nutrition)
-    if choice == "4":
+    if chosen == "4":
         print("Calorie (kcal) Intake:")
         for date in calendar:
             print("{}: {}".format(date, calendar[date].total("calories", food_dict)))
-    if choice == "5":
+    if chosen == "5":
         print("Protein (g) Intake:")
         for date in calendar:
             print("{}: {}".format(date, calendar[date].total("protein", food_dict)))
