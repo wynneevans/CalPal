@@ -1,30 +1,46 @@
-from food import *
-import pickle
-
-food_dict = {}
-calendar = {}
+import sqlite3
+import pandas as pd
 
 try:
-    food_dict = pickle.load(open("foods.dat", "rb"))
-except Exception:
-    print("Could not open food database.")
+    conn = sqlite3.connect('food.db')
+except sqlite3.OperationalError:
+    print("Could not connect to food.db.")
+
+c = conn.cursor()
 
 try:
-    calendar = pickle.load(open("calendar.dat", "rb"))
-except Exception:
-    print("Could not open food calendar")
+    c.execute('''CREATE TABLE foods(food TEXT, calories INTEGER, protein INTEGER)''')
+    conn.commit()
+    print("Foods table didn't exist so we created.")
+except sqlite3.OperationalError:
+    print("Foods table is present.")
+
+try:
+    c.execute('''CREATE TABLE diary(dateID INTEGER, food TEXT, weight INTEGER)''')
+    conn.commit()
+    print("Diary table didn't exist so we created.")
+except sqlite3.OperationalError:
+    print("Diary table is present.")
+
+dates = pd.date_range(start='2018-01-01', end='2018-01-31')
+date_dateID_dict = {}
+i = 0
+for date in dates.astype(str):
+    i = i + 1
+    date_dateID_dict[date] = i
 
 chosen = ""
 
 def get_choice():
     choice = ""
-    while choice != "1" and choice != "2" and choice != "3" and choice != "4" and choice != "5" and choice != "exit":
+    while choice != "1" and choice != "2" and choice != "3" and choice != "4" and choice != "5" and choice != "6" and choice != "7" and choice != "exit":
         choice = input("""
-        [1]: Add food to global list.
-        [2]: Add food to date list.
-        [3]: Print foods in global list.
-        [4]: Print calorie intake for each calendar entry.
-        [5]: Print protein intake for each calendar entry.
+        [1]: Add item to food table.
+        [2]: Add food serving to diary table.
+        [3]: Print food table.
+        [4]: Print diary table.
+        [5]: Group diary entries and summarise.
+        [6]: Edit food nutrient values.
         [exit]: Exit program.
         """)
     return choice
@@ -34,32 +50,40 @@ while chosen != "exit":
     chosen = get_choice()
 
     if chosen == "1":
-        food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(" ")
-        food_dict[food] = Nutrients(int(protein), int(calories))
+        food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(", ")
+        c.execute("INSERT INTO food VALUES(?, ?, ?)", (food, calories, protein))
     if chosen == "2":
-        date, food_1, weight_1, food_2, weight_2 = input("Enter: date, food 1, weight 1, food 2, weight 2\n").split(" ")
-        calendar[date] = FoodList()
-        calendar[date].add_food(food_1, int(weight_1))
-        calendar[date].add_food(food_2, int(weight_2))
+        dateID, food, weight = input("Enter: dateID, food, weight\n").split(", ")
+        c.execute("INSERT INTO diary VALUES(?, ?, ?)", (dateID, food, weight))
     if chosen == "3":
-        for food in food_dict:
-            print(food, food_dict[food].nutrition)
+        c.execute("SELECT name, calories, protein FROM foods ")
+        print(c.fetchall())
     if chosen == "4":
-        print("Calorie (kcal) Intake:")
-        for date in calendar:
-            print("{}: {}".format(date, calendar[date].total("calories", food_dict)))
+        c.execute("SELECT dateID, food, weight FROM diary")
+        print(c.fetchall())
     if chosen == "5":
-        print("Protein (g) Intake:")
-        for date in calendar:
-            print("{}: {}".format(date, calendar[date].total("protein", food_dict)))
+        c.execute("SELECT foodname FROM diary")
+        print(c.fetchall())
+    if chosen == "6":
+        food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(", ")
+        c.execute("UPDATE foods SET calories = ?, protein = ? WHERE name = ?", (calories, protein, food))
+    if chosen == "7":
+        #c.execute("SELECT dateID, date, calories, protein FROM summary")
+        #print(c.fetchall())
+        c.execute("DROP TABLE diary")
+        #c.execute("ALTER TABLE food RENAME TO foods")
+
+    conn.commit()
+
+conn.close()
 
 
-try:
-    pickle.dump(food_dict, open("foods.dat", "wb"))
-except Exception:
-    print("Could not save food dictionary")
-
-try:
-    pickle.dump(calendar, open("calendar.dat", "wb"))
-except Exception:
-    print("Could not save calendar")
+#try:
+#    c.execute('''CREATE TABLE summary(dateID INTEGER PRIMARY KEY, date DATE, calories INTEGER, protein INTEGER)''')
+#    dates = pd.date_range(start='2018-01-01', end='2018-01-31')
+#    for date in dates.astype(str):
+#        c.execute("INSERT INTO summary VALUES(NULL, ? , NULL, NULL)", (date,))
+#    conn.commit()
+#    print("Summary table didn't exist so we created.")
+#except sqlite3.OperationalError:
+#    print("Summary table is present.")
