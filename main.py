@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+import matplotlib.pyplot as plt
 
 try:
     conn = sqlite3.connect('food.db')
@@ -9,20 +10,21 @@ except sqlite3.OperationalError:
 c = conn.cursor()
 
 try:
-    c.execute('''CREATE TABLE foods(food TEXT, calories INTEGER, protein INTEGER)''')
+    c.execute('''CREATE TABLE foods(food TEXT, calories REAL , 
+                    protein REAL, carbohydrate REAL, sugar REAL, fat REAL, 'saturated fat' REAL)''')
     conn.commit()
-    print("Foods table didn't exist so we created.")
+    print("Foods table didn't exist so it was created.")
 except sqlite3.OperationalError:
     print("Foods table is present.")
 
 try:
-    c.execute('''CREATE TABLE diary(dateID INTEGER, food TEXT, weight INTEGER)''')
+    c.execute('''CREATE TABLE diary(date DATE, food TEXT, weight REAL)''')
     conn.commit()
-    print("Diary table didn't exist so we created.")
+    print("Diary table didn't exist so it was created.")
 except sqlite3.OperationalError:
     print("Diary table is present.")
 
-dates = pd.date_range(start='2018-01-01', end='2018-01-31')
+dates = pd.date_range(start='2018-01-01', end='2020-01-01')
 date_dateID_dict = {}
 i = 0
 for date in dates.astype(str):
@@ -30,6 +32,7 @@ for date in dates.astype(str):
     date_dateID_dict[date] = i
 
 chosen = ""
+summary = []
 
 def get_choice():
     choice = ""
@@ -50,40 +53,50 @@ while chosen != "exit":
     chosen = get_choice()
 
     if chosen == "1":
-        food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(", ")
-        c.execute("INSERT INTO food VALUES(?, ?, ?)", (food, calories, protein))
+        food, calories, protein, carbohydrate, sugar, fat, sat_fat = input('''Enter food name and nutrient information per 100g: 
+        food, calories, protein, carbohydrate, sugar, fat, saturated fat\n''').split(", ")
+        c.execute("INSERT INTO foods VALUES(?, ?, ?, ?, ?, ?, ?)", (food, calories, protein, carbohydrate, sugar, fat, sat_fat))
     if chosen == "2":
-        dateID, food, weight = input("Enter: dateID, food, weight\n").split(", ")
-        c.execute("INSERT INTO diary VALUES(?, ?, ?)", (dateID, food, weight))
+        date, food, weight = input("Enter: date, food, weight\n").split(", ")
+        c.execute("INSERT INTO diary VALUES(?, ?, ?)", (date, food, weight))
     if chosen == "3":
-        c.execute("SELECT name, calories, protein FROM foods ")
+        c.execute("SELECT food, calories, protein, carbohydrate, sugar, fat, `saturated fat` FROM foods ")
         print(c.fetchall())
     if chosen == "4":
-        c.execute("SELECT dateID, food, weight FROM diary")
+        c.execute("SELECT date, food, weight FROM diary")
         print(c.fetchall())
     if chosen == "5":
-        c.execute("SELECT foodname FROM diary")
-        print(c.fetchall())
+        c.execute('''SELECT diary.date, SUM(diary.weight * foods.calories) / 100, SUM(diary.weight * foods.protein) / 100, 
+        SUM(diary.weight * foods.carbohydrate) / 100, SUM(diary.weight * foods.sugar) / 100, 
+        SUM(diary.weight * foods.fat) / 100, SUM(diary.weight * foods.`saturated fat`) / 100
+        FROM diary LEFT JOIN foods ON foods.food = diary.food 
+        GROUP BY diary.date''')
+        summary = c.fetchall()
     if chosen == "6":
-        food, protein, calories = input("Enter: food, protein/100g, calories/100g\n").split(", ")
-        c.execute("UPDATE foods SET calories = ?, protein = ? WHERE name = ?", (calories, protein, food))
+        table, column2, row, column1, value = input("Enter: table, search_column, search_col_entry, update_col_name, update_col_entry\n").split(", ")
+        print(table, row, column1, column2, value)
+        command = "UPDATE " + table + " SET " + column1 +  " = ? WHERE " + column2 + " = ?"
+        c.execute(command, (value, row))
     if chosen == "7":
+        print(summary)
+        plt.bar([i[0] for i in summary], [i[1] for i in summary])
+        plt.bar([i[0] for i in summary], [i[2] for i in summary], width=0.6)
+        plt.bar([i[0] for i in summary], [i[3] for i in summary], width=0.5)
+        plt.bar([i[0] for i in summary], [i[4] for i in summary], width=0.4)
+        plt.bar([i[0] for i in summary], [i[5] for i in summary], width=0.3)
+        plt.bar([i[0] for i in summary], [i[6] for i in summary], width = 0.2)
+        plt.show()
+        #a = conn.execute('select * from foods')
+        #names = list(map(lambda x: x[0], a.description))
+        #print(names)
+        #print(date_dateID_dict)
         #c.execute("SELECT dateID, date, calories, protein FROM summary")
         #print(c.fetchall())
-        c.execute("DROP TABLE diary")
+        #c.execute("DROP TABLE diary")
+        #c.execute("DROP TABLE foods")
         #c.execute("ALTER TABLE food RENAME TO foods")
 
     conn.commit()
 
 conn.close()
 
-
-#try:
-#    c.execute('''CREATE TABLE summary(dateID INTEGER PRIMARY KEY, date DATE, calories INTEGER, protein INTEGER)''')
-#    dates = pd.date_range(start='2018-01-01', end='2018-01-31')
-#    for date in dates.astype(str):
-#        c.execute("INSERT INTO summary VALUES(NULL, ? , NULL, NULL)", (date,))
-#    conn.commit()
-#    print("Summary table didn't exist so we created.")
-#except sqlite3.OperationalError:
-#    print("Summary table is present.")
