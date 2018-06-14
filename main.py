@@ -29,7 +29,7 @@ date_dateID_dict = {}
 i = 0
 for date in dates.astype(str):
     i = i + 1
-    date_dateID_dict[date] = i
+    date_dateID_dict[i] = date
 
 chosen = ""
 summary = []
@@ -72,21 +72,31 @@ while chosen != "exit":
         FROM diary LEFT JOIN foods ON foods.food = diary.food 
         GROUP BY diary.date''')
         summary = c.fetchall()
+        print(len(summary))
+        x = [i for i in range(1,len(summary)+1)]
+        print(x)
+        plt.bar([i[0] for i in summary], [i[1] for i in summary])
+        plt.title("Calories Consumed per Day")
+        plt.ylabel("kcal")
+        plt.show()
+
+        plt.bar([i-0.3 for i in x], [i[2] for i in summary], width=0.15, label="Protein")
+        plt.bar([i-0.15 for i in x], [i[3] for i in summary], width=0.15, label="Carbohydrate")
+        plt.bar(x, [i[4] for i in summary], width=0.15, label="Sugar")
+        plt.bar([i+0.15 for i in x], [i[5] for i in summary], width=0.15, label="Fat")
+        plt.bar([i+0.3 for i in x], [i[6] for i in summary], width=0.15, label="Saturated Fat")
+        plt.xticks(x, [date_dateID_dict[i] for i in x])
+        plt.title("Macronutrients Consumed per Day")
+        plt.ylabel("grams")
+        plt.legend()#, "Carbohydrate", "Sugar", "Fat", "Saturated Fat")
+        plt.show()
     if chosen == "6":
         table, column2, row, column1, value = input("Enter: table, search_column, search_col_entry, update_col_name, update_col_entry\n").split(", ")
         print(table, row, column1, column2, value)
         command = "UPDATE " + table + " SET " + column1 +  " = ? WHERE " + column2 + " = ?"
         c.execute(command, (value, row))
-    if chosen == "7":
-        print(summary)
-        plt.bar([i[0] for i in summary], [i[1] for i in summary])
-        plt.bar([i[0] for i in summary], [i[2] for i in summary], width=0.6)
-        plt.bar([i[0] for i in summary], [i[3] for i in summary], width=0.5)
-        plt.bar([i[0] for i in summary], [i[4] for i in summary], width=0.4)
-        plt.bar([i[0] for i in summary], [i[5] for i in summary], width=0.3)
-        plt.bar([i[0] for i in summary], [i[6] for i in summary], width = 0.2)
-        plt.show()
-        #a = conn.execute('select * from foods')
+    #if chosen == "7":
+    #    a = conn.execute('select * from foods')
         #names = list(map(lambda x: x[0], a.description))
         #print(names)
         #print(date_dateID_dict)
@@ -95,6 +105,7 @@ while chosen != "exit":
         #c.execute("DROP TABLE diary")
         #c.execute("DROP TABLE foods")
         #c.execute("ALTER TABLE food RENAME TO foods")
+
 
     conn.commit()
 
