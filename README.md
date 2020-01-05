@@ -7,4 +7,4 @@ Then users simply list the food and quantity in grams to calculate their calorif
 
 ## Development Plan
 
-Eventually my plan is to turn this into a web app built with Django.
+Eventually this will be a web app built with Django.
