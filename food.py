@@ -1,15 +1,13 @@
-class Nutrients:
-    def __init__(self, protein, calories):
-        self.protein = protein
+# research sparksee for storing objects
+
+class Food:
+    def __init__(self, name, calories, protein, carbs, fat):
+        self.name = name
         self.calories = calories
-        self.nutrition = {"protein": self.protein, "calories": self.calories}
-
-    def edit_protein(self, protein_update):
-        self.nutrition = {"protein": protein_update, "calories": self.calories}
-
-    def edit_calories(self, calories_update):
-        self.calories = {"protein": self.protein, "calories": calories_update}
-
+        self.protein = protein
+        self.carbs = carbs
+        self.fat = fat
+        
 
 class FoodList:
     def __init__(self):
