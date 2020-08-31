@@ -1,13 +1,24 @@
 # research sparksee for storing objects
 
 class Food:
+
+"""
+The Food class allows Food objects to be created which define
+the calories, protein, carbs and fat per 100g of the named food.
+
+"""
+
     def __init__(self, name, calories, protein, carbs, fat):
         self.name = name
         self.calories = calories
         self.protein = protein
         self.carbs = carbs
         self.fat = fat
-        
+
+
+class Meal:
+
+#Foodxquantity        
 
 class FoodList:
     def __init__(self):
